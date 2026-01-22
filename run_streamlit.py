@@ -93,7 +93,6 @@ def main():
         
         # Intentar verificar si Streamlit está instalado
         try:
-            import subprocess
             check_streamlit = subprocess.run(
                 [python_executable, "-c", "import streamlit; print('Streamlit OK')"],
                 capture_output=True,
