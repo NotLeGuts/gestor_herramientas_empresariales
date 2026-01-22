@@ -22,15 +22,22 @@ def main():
     # Añadir el directorio del proyecto al PYTHONPATH para que los módulos puedan ser importados
     sys.path.insert(0, script_dir)
     
-    # Verificar si existe el entorno virtual en env/
-    venv_path = os.path.join(script_dir, "env", "bin", "python")
-    if os.path.exists(venv_path):
-        # Usar el Python del entorno virtual
-        python_executable = venv_path
-        print(f"Usando Python del entorno virtual: {venv_path}")
-    else:
-        # Usar el Python actual
-        python_executable = sys.executable
+    # Verificar si existe el entorno virtual en varias ubicaciones comunes
+    venv_locations = [
+        os.path.join(script_dir, "env", "bin", "python"),
+        os.path.join(script_dir, ".venv", "bin", "python"),
+        os.path.join(script_dir, "venv", "bin", "python"),
+    ]
+    
+    python_executable = sys.executable
+    for venv_path in venv_locations:
+        if os.path.exists(venv_path):
+            # Usar el Python del entorno virtual
+            python_executable = venv_path
+            print(f"Usando Python del entorno virtual: {venv_path}")
+            break
+    
+    print(f"Python ejecutable: {python_executable}")
     
     # Verificar que estamos en el directorio correcto
     if not os.path.exists("frontend/Inicio.py"):
@@ -70,11 +77,34 @@ def main():
         "--server.enableXsrfProtection=false"
     ]
     
+    print(f"Comando a ejecutar: {' '.join(streamlit_args)}")
+    print(f"Directorio actual: {os.getcwd()}")
+    print(f"Archivos en directorio: {os.listdir('.')}")
+    
     # Ejecutar Streamlit
     try:
-        subprocess.run(streamlit_args, check=True)
+        result = subprocess.run(streamlit_args, check=True)
     except subprocess.CalledProcessError as e:
-        print(f"Error al ejecutar Streamlit: {e}")
+        print(f"\nError al ejecutar Streamlit:")
+        print(f"  Código de salida: {e.returncode}")
+        print(f"  Comando: {' '.join(streamlit_args)}")
+        print(f"  Python: {python_executable}")
+        print(f"  Existe Python: {os.path.exists(python_executable)}")
+        
+        # Intentar verificar si Streamlit está instalado
+        try:
+            import subprocess
+            check_streamlit = subprocess.run(
+                [python_executable, "-c", "import streamlit; print('Streamlit OK')"],
+                capture_output=True,
+                text=True
+            )
+            print(f"  Verificación de Streamlit: {check_streamlit.stdout}")
+            if check_streamlit.stderr:
+                print(f"  Error en verificación: {check_streamlit.stderr}")
+        except Exception as verify_error:
+            print(f"  No se pudo verificar Streamlit: {verify_error}")
+        
         sys.exit(1)
     except KeyboardInterrupt:
         print("\nStreamlit detenido por el usuario.")
