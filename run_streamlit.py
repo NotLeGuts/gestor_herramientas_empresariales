@@ -104,6 +104,57 @@ def main():
         except Exception as verify_error:
             print(f"  No se pudo verificar Streamlit: {verify_error}")
         
+        # Intentar ejecutar Streamlit con capture_output para ver el error real
+        print("\n--- Intentando obtener la salida de error completa ---")
+        try:
+            debug_run = subprocess.run(
+                streamlit_args,
+                capture_output=True,
+                text=True,
+                timeout=30
+            )
+            print(f"Salida estándar:\n{debug_run.stdout}")
+            print(f"Salida de error:\n{debug_run.stderr}")
+        except subprocess.TimeoutExpired:
+            print("El comando se tiempo fuera al intentar obtener la salida de error")
+        except Exception as debug_error:
+            print(f"Error al intentar obtener salida de error: {debug_error}")
+        
+        # Verificar si el archivo Inicio.py existe y es válido
+        print("\n--- Verificando archivo Inicio.py ---")
+        if os.path.exists("frontend/Inicio.py"):
+            print("✓ frontend/Inicio.py existe")
+            try:
+                with open("frontend/Inicio.py", "r") as f:
+                    content = f.read()
+                    print(f"✓ Tamaño del archivo: {len(content)} bytes")
+                    # Verificar si hay errores sintácticos
+                    compile(content, "frontend/Inicio.py", "exec")
+                    print("✓ No hay errores de sintaxis")
+            except SyntaxError as syntax_error:
+                print(f"✗ Error de sintaxis: {syntax_error}")
+            except Exception as file_error:
+                print(f"✗ Error al leer archivo: {file_error}")
+        else:
+            print("✗ frontend/Inicio.py NO existe")
+        
+        # Verificar si los módulos personalizados existen
+        print("\n--- Verificando módulos personalizados ---")
+        modules_to_check = [
+            "app.database.config",
+            "app.crud",
+            "app.models"
+        ]
+        
+        for module in modules_to_check:
+            try:
+                __import__(module)
+                print(f"✓ {module} se importó correctamente")
+            except ImportError as import_error:
+                print(f"✗ {module} NO se pudo importar: {import_error}")
+            except Exception as module_error:
+                print(f"✗ {module} generó error: {module_error}")
+        
         sys.exit(1)
     except KeyboardInterrupt:
         print("\nStreamlit detenido por el usuario.")
