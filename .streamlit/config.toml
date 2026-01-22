@@ -18,17 +18,17 @@ font = "sans serif"
 
 # Configuración adicional
 
-[server]
+# [server]
 
 # Puerto por defecto
-port = 8501
+# port = 8501
 
 # Permitir acceso desde otros dispositivos en la red local
-address = "0.0.0.0"
+# address = "0.0.0.0"
 
 # Configuración de performance
 
-[runner]
+# [runner]
 
 # Deshabilitar el modo desarrollo (para producción)
 # devMode = false
