@@ -5,7 +5,7 @@ setup(
     version="0.1.0",
     packages=find_packages(),
     install_requires=[
-        "stramlit>=1.0.0",
+        "streamlit>=1.0.0",
         "sqlmodel>=0.0.31",
         "sqlalchemy>=2.0.0",
         "pydantic>=2.0.0",

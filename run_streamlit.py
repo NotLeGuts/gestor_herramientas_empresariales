@@ -19,6 +19,19 @@ def main():
     # Cambiar al directorio del proyecto
     os.chdir(script_dir)
     
+    # Añadir el directorio del proyecto al PYTHONPATH para que los módulos puedan ser importados
+    sys.path.insert(0, script_dir)
+    
+    # Verificar si existe el entorno virtual en env/
+    venv_path = os.path.join(script_dir, "env", "bin", "python")
+    if os.path.exists(venv_path):
+        # Usar el Python del entorno virtual
+        python_executable = venv_path
+        print(f"Usando Python del entorno virtual: {venv_path}")
+    else:
+        # Usar el Python actual
+        python_executable = sys.executable
+    
     # Verificar que estamos en el directorio correcto
     if not os.path.exists("frontend/Inicio.py"):
         print("Error: No se encontró el archivo frontend/Inicio.py")
@@ -44,7 +57,7 @@ def main():
     
     # Construir la lista de argumentos para Streamlit
     streamlit_args = [
-        sys.executable,
+        python_executable,
         "-m",
         "streamlit",
         "run",
