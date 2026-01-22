@@ -26,9 +26,6 @@ port = 8501
 # Permitir acceso desde otros dispositivos en la red local
 address = "0.0.0.0"
 
-# Deshabilitar el modo seguro para cargar imágenes y recursos externos
-enableCORS = false
-
 # Configuración de performance
 
 [runner]

@@ -64,20 +64,13 @@ def main():
     print("Abrir en el navegador: http://localhost:8501")
     
     # Construir la lista de argumentos para Streamlit
+    # Configuración simplificada para evitar conflictos con Render
     streamlit_args = [
         python_executable,
         "-m",
         "streamlit",
         "run",
-        "frontend/Inicio.py",
-        "--server.port=8501",
-        "--server.address=0.0.0.0",
-        "--browser.serverAddress=0.0.0.0",  # Cambiado a 0.0.0.0 para Render
-        "--server.headless=true",  # Modo headless para producción
-        "--server.enableCORS=false",
-        "--server.enableXsrfProtection=false",
-        "--server.enableWebsocketCompression=false",  # Deshabilitar compresión para evitar problemas
-        "--global.developmentMode=false"  # Modo producción
+        "frontend/Inicio.py"
     ]
     
     print(f"Comando a ejecutar: {' '.join(streamlit_args)}")
@@ -99,23 +92,12 @@ def main():
         # Esperar un momento para que Streamlit inicie
         time.sleep(5)
         
-        # Verificar si el puerto está abierto
-        print("\n--- Verificando si el puerto 8501 está escuchando ---")
-        import socket
+        # Verificar si Streamlit está ejecutándose correctamente
+        print("\n--- Verificando si Streamlit está en ejecución ---")
         
-        def is_port_open(port, host='0.0.0.0', timeout=5):
-            try:
-                sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                sock.settimeout(timeout)
-                result = sock.connect_ex((host, port))
-                sock.close()
-                return result == 0
-            except Exception as e:
-                print(f"Error al verificar puerto: {e}")
-                return False
-        
-        if is_port_open(8501, '0.0.0.0'):
-            print("✓ Puerto 8501 está abierto y escuchando!")
+        # Verificar si el proceso está activo
+        if streamlit_process.poll() is None:
+            print("✓ Streamlit está en ejecución.")
             print("Streamlit se está ejecutando correctamente.")
             
             # Mostrar salida de Streamlit
@@ -134,7 +116,7 @@ def main():
             streamlit_process.wait()
             sys.exit(0)
         else:
-            print("✗ Puerto 8501 no está abierto")
+            print("✗ Streamlit no está en ejecución.")
             print("Streamlit podría no estar ejecutándose correctamente.")
             
             # Obtener salida de error
