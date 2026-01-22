@@ -1,0 +1,71 @@
+# Configuración de Streamlit para el Gestor de Herramientas
+# Esta configuración personaliza la apariencia y comportamiento de la aplicación
+
+[theme]
+base = "light"
+backgroundColor = "white"
+secondaryBackgroundColor = "lavender"
+codeBackgroundColor = "powderBlue"
+
+[theme.sidebar]
+backgroundColor = "ghostWhite"
+secondaryBackgroundColor = "lavender"
+
+# Fontes
+# Usamos la fuente Chillax de la carpeta static/
+# La configuración de la fuente se maneja en custom.css
+font = "sans serif"
+
+# Configuración adicional
+
+[server]
+
+# Puerto por defecto
+port = 8501
+
+# Permitir acceso desde otros dispositivos en la red local
+address = "0.0.0.0"
+
+# Deshabilitar el modo seguro para cargar imágenes y recursos externos
+enableCORS = false
+
+# Configuración de performance
+
+[runner]
+
+# Deshabilitar el modo desarrollo (para producción)
+# devMode = false
+
+# Configuración de cache
+
+[client]
+
+# Mostrar todo el contenido al cargar (no recortar)
+displayEnabled = true
+
+# Configuración personalizada para nuestra aplicación
+
+# Colores personalizados para estados de préstamos
+# Estos se pueden usar en el código con st.markdown y unsafe_allow_html
+
+# Estado Activo (préstamo en curso)
+# primaryColor = "#1E88E5"  # Azul (ya configurado arriba)
+
+# Estado Vencido (préstamo atrasado)
+# colorVencido = "#FFC107"  # Amarillo
+
+# Estado Devuelto (préstamo completado)
+# colorDevuelto = "#4CAF50"  # Verde
+
+# Estado Cancelado (préstamo anulado)
+# colorCancelado = "#F44336"  # Rojo
+
+# Configuración de layout
+
+# Tamaño máximo de la aplicación
+maxWidth = 1200
+
+# Configuración de sesiones
+
+# Duración de la sesión en segundos (0 = infinito)
+# sessionDuration = 0
