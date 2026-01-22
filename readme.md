@@ -81,11 +81,21 @@ python tests/init_db_test.py
 
 ### 3. Ejecutar la aplicación
 
+#### Local (desarrollo)
+
 ```bash
 streamlit run frontend/Inicio.py
 ```
 
 La aplicación se abrirá en tu navegador en `http://localhost:8501`
+
+#### En Render (producción)
+
+```bash
+python run_streamlit_render.py
+```
+
+Ver [RENDER_DEPLOYMENT.md](RENDER_DEPLOYMENT.md) para instrucciones detalladas de despliegue en Render.
 
 ### 4. Ejecutar tests
 
@@ -116,4 +126,38 @@ python tests/test_prestamo.py
 - Herramientas más solicitadas (top 5).
 - Préstamos vencidos (alertas).
 - Disponibilidad en tiempo real (dashboard).
+
+## 🌐 Despliegue en la Nube
+
+### Despliegue en Render
+
+La aplicación está diseñada para desplegarse fácilmente en [Render.com](https://render.com/).
+
+**Archivos clave para Render:**
+- `run_streamlit_render.py` - Script optimizado para Render
+- `RENDER_DEPLOYMENT.md` - Guía completa de despliegue
+
+**Configuración recomendada:**
+- **Build Command:** `pip install -r requirements.txt`
+- **Start Command:** `python run_streamlit_render.py`
+- **Environment:** Python 3.11+
+- **Variables de entorno:**
+  - `DATABASE_URL` (SQLite o PostgreSQL)
+  - `STREAMLIT_SERVER_PORT` (default: 8501)
+  - `STREAMLIT_SERVER_ADDRESS` (default: 0.0.0.0)
+
+Ver [RENDER_DEPLOYMENT.md](RENDER_DEPLOYMENT.md) para instrucciones detalladas.
+
+### Despliegue en otros servicios
+
+La aplicación puede desplegarse en cualquier servicio que soporte:
+- Python 3.7+
+- Streamlit
+- Acceso a base de datos (SQLite o PostgreSQL)
+
+**Alternativas:**
+- Railway.app
+- Heroku
+- AWS Elastic Beanstalk
+- Google Cloud Run
 
