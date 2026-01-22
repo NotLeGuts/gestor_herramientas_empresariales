@@ -38,11 +38,6 @@ enableCORS = false
 
 # Configuración de cache
 
-[client]
-
-# Mostrar todo el contenido al cargar (no recortar)
-displayEnabled = true
-
 # Configuración personalizada para nuestra aplicación
 
 # Colores personalizados para estados de préstamos
@@ -61,9 +56,6 @@ displayEnabled = true
 # colorCancelado = "#F44336"  # Rojo
 
 # Configuración de layout
-
-# Tamaño máximo de la aplicación
-maxWidth = 1200
 
 # Configuración de sesiones
 
