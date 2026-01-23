@@ -57,9 +57,19 @@ def main():
     try:
         from app.database.config import engine
         from app.crud import get_empleados, get_herramientas, get_prestamos_activos
+        from app.database.init_db import create_table
         print("✓ Módulos personalizados cargados correctamente")
     except Exception as e:
         print(f"Error al cargar módulos: {e}", file=sys.stderr)
+        sys.exit(1)
+    
+    # Inicializar la base de datos (crear tablas si no existen)
+    try:
+        print("Inicializando base de datos...")
+        create_table()
+        print("✓ Base de datos inicializada correctamente")
+    except Exception as e:
+        print(f"Error al inicializar base de datos: {e}", file=sys.stderr)
         sys.exit(1)
     
     # Mostrar información de configuración

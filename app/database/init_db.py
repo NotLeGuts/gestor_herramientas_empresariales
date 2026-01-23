@@ -6,7 +6,18 @@ from app.models.prestamo import Prestamo
 
 
 def create_table():
-    SQLModel.metadata.create_all(engine)
+    """
+    Crea todas las tablas en la base de datos si no existen.
+    
+    Esta función es idempotente y puede ejecutarse múltiples veces
+    sin causar errores.
+    """
+    try:
+        SQLModel.metadata.create_all(engine)
+        print("Tablas creadas/verificadas exitosamente")
+    except Exception as e:
+        print(f"Error al crear tablas: {e}")
+        raise
 
 
 if __name__ == "__main__":
