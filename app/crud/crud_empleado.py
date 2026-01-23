@@ -7,7 +7,7 @@ def create_empleado(
     nombre: str,
     apellido: str,
     area: str,
-    correo: str,
+    correo: str | None = None,
     activo: bool = True,
 ):
     "Crear empleado nuevo"

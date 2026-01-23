@@ -79,6 +79,20 @@ pip install -r requirements.txt
 python tests/init_db_test.py
 ```
 
+### 3. Migraciones de Base de Datos
+
+Si está actualizando desde una versión anterior, puede que necesite ejecutar migraciones:
+
+```bash
+# Para entornos de producción (migración segura)
+python -m app.database.migrate_correo_unique
+
+# Para entornos de desarrollo (recrear tablas)
+python -m app.database.migrate_correo_unique --recreate
+```
+
+Ver [app/database/MIGRATION_GUIDE.md](app/database/MIGRATION_GUIDE.md) para más detalles.
+
 ### 3. Ejecutar la aplicación
 
 #### Local (desarrollo)
