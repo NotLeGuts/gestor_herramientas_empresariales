@@ -25,11 +25,11 @@ from app.crud import (
 from frontend.utils import show_success, show_error, show_info, validate_required_fields
 
 
-# Cachear la sesión de base de datos
+# Cachear el motor de base de datos (no la sesión)
 @st.cache_resource
-def get_db_session():
-    """Obtener una sesión de base de datos."""
-    return Session(engine)
+def get_db_engine():
+    """Obtener el motor de base de datos."""
+    return engine
 
 
 def render_herramienta_form(herramienta=None):
@@ -96,21 +96,22 @@ def render_herramienta_form(herramienta=None):
                 show_error(message)
                 return None
             
-            session = get_db_session()
+            engine = get_db_engine()
             
             try:
-                if herramienta:
-                    # Actualizar herramienta existente
-                    update_herramienta(
-                        session,
-                        herramienta.id_herramienta,
-                        nombre=nombre,
-                        categoria=categoria,
-                        estado=estado,
-                        codigo_interno=codigo_interno,
-                        cantidad_disponible=cantidad_disponible,
-                        descripcion=descripcion
-                    )
+                with Session(engine) as session:
+                    if herramienta:
+                        # Actualizar herramienta existente
+                        update_herramienta(
+                            session,
+                            herramienta.id_herramienta,
+                            nombre=nombre,
+                            categoria=categoria,
+                            estado=estado,
+                            codigo_interno=codigo_interno,
+                            cantidad_disponible=cantidad_disponible,
+                            descripcion=descripcion
+                        )
                     show_success(f"Ferramenta {nombre} atualizada com sucesso")
                 else:
                     # Crear nueva herramienta
@@ -164,14 +165,16 @@ def render_herramienta_details(herramienta):
             
             if herramienta.estado:
                 if st.button("❌ Desabilitar", key=f"disable_herramienta_{herramienta.id_herramienta}"):
-                    session = get_db_session()
-                    inhabilitar_herramienta(session, herramienta.id_herramienta)
+                    engine = get_db_engine()
+                    with Session(engine) as session:
+                        inhabilitar_herramienta(session, herramienta.id_herramienta)
                     show_success(f"Ferramenta {herramienta.nombre} desabilitada")
                     st.rerun()
             else:
                 if st.button("✅ Habilitar", key=f"enable_herramienta_{herramienta.id_herramienta}"):
-                    session = get_db_session()
-                    habilitar_herramienta(session, herramienta.id_herramienta)
+                    engine = get_db_engine()
+                    with Session(engine) as session:
+                        habilitar_herramienta(session, herramienta.id_herramienta)
                     show_success(f"Ferramenta {herramienta.nombre} habilitada")
                     st.rerun()
 
@@ -311,13 +314,15 @@ def main():
     )
     
     # Obtener herramientas
-    session = get_db_session()
-    herramientas = get_herramientas(session)
+    engine = get_db_engine()
+    with Session(engine) as session:
+        herramientas = get_herramientas(session)
     
     # Verificar si estamos editando una herramienta
     if "editing_herramienta_id" in st.session_state:
         editing_id = st.session_state["editing_herramienta_id"]
-        herramienta_to_edit = get_herramienta_by_id(session, editing_id)
+        with Session(engine) as session:
+            herramienta_to_edit = get_herramienta_by_id(session, editing_id)
         
         if herramienta_to_edit:
             render_herramienta_form(herramienta_to_edit)

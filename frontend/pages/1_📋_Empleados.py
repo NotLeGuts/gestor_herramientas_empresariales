@@ -24,11 +24,11 @@ from app.crud import (
 from frontend.utils import show_success, show_error, show_info, validate_required_fields
 
 
-# Cachear la sesión de base de datos
+# Cachear el motor de base de datos (no la sesión)
 @st.cache_resource
-def get_db_session():
-    """Obtener una sesión de base de datos."""
-    return Session(engine)
+def get_db_engine():
+    """Obtener el motor de base de datos."""
+    return engine
 
 
 def render_empleado_form(empleado=None):
@@ -93,20 +93,21 @@ def render_empleado_form(empleado=None):
                 show_error("O campo Nome é obrigatório")
                 return None
             
-            session = get_db_session()
+            engine = get_db_engine()
             
             try:
-                if empleado:
-                    # Actualizar empleado existente
-                    update_empleado(
-                        session,
-                        empleado.id,
-                        nombre=nombre,
-                        apellido=apellido,
-                        area=area,
-                        correo=correo,
-                        activo=activo
-                    )
+                with Session(engine) as session:
+                    if empleado:
+                        # Actualizar empleado existente
+                        update_empleado(
+                            session,
+                            empleado.id,
+                            nombre=nombre,
+                            apellido=apellido,
+                            area=area,
+                            correo=correo,
+                            activo=activo
+                        )
                     show_success(f"Funcionário {nombre} {apellido} atualizado com sucesso")
                 else:
                     # Crear nuevo empleado
@@ -151,14 +152,16 @@ def render_empleado_details(empleado, expanded=False):
             
             if empleado.activo:
                 if st.button("Desabilitar", key=f"disable_{empleado.id}"):
-                    session = get_db_session()
-                    inhabilitar_empleado(session, empleado.id)
+                    engine = get_db_engine()
+                    with Session(engine) as session:
+                        inhabilitar_empleado(session, empleado.id)
                     show_success(f"Funcionário {empleado.nombre} desabilitado")
                     st.rerun()
             else:
                 if st.button("Habilitar", key=f"enable_{empleado.id}"):
-                    session = get_db_session()
-                    habilitar_empleado(session, empleado.id)
+                    engine = get_db_engine()
+                    with Session(engine) as session:
+                        habilitar_empleado(session, empleado.id)
                     show_success(f"Funcionário {empleado.nombre} habilitado")
                     st.rerun()
 
@@ -266,13 +269,15 @@ def main():
     )
     
     # Obtener empleados
-    session = get_db_session()
-    empleados = get_empleados(session)
+    engine = get_db_engine()
+    with Session(engine) as session:
+        empleados = get_empleados(session)
     
     # Verificar si estamos editando un empleado
     if "editing_empleado_id" in st.session_state:
         editing_id = st.session_state["editing_empleado_id"]
-        empleado_to_edit = get_empleado_by_id(session, editing_id)
+        with Session(engine) as session:
+            empleado_to_edit = get_empleado_by_id(session, editing_id)
         
         if empleado_to_edit:
             render_empleado_form(empleado_to_edit)

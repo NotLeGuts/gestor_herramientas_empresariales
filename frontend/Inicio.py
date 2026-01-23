@@ -21,21 +21,22 @@ st.set_page_config(
 
 
 
-# Cachear la sesión de base de datos
+# Cachear el motor de base de datos (no la sesión)
 @st.cache_resource
-def get_db_session():
-    """Obtener una sesión de base de datos."""
-    return Session(engine)
+def get_db_engine():
+    """Obtener el motor de base de datos."""
+    return engine
 
 
 # Función para obtener datos iniciales
 def get_dashboard_data():
     """Obtener datos para el dashboard principal."""
-    session = get_db_session()
+    engine = get_db_engine()
     
-    empleados = get_empleados(session)
-    herramientas = get_herramientas(session)
-    prestamos_activos = get_prestamos_activos(session)
+    with Session(engine) as session:
+        empleados = get_empleados(session)
+        herramientas = get_herramientas(session)
+        prestamos_activos = get_prestamos_activos(session)
     
     return {
         "empleados": empleados,

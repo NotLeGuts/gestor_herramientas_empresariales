@@ -37,11 +37,11 @@ from frontend.utils import (
 )
 
 
-# Cachear la sesión de base de datos
+# Cachear el motor de base de datos (no la sesión)
 @st.cache_resource
-def get_db_session():
-    """Obtener una sesión de base de datos."""
-    return Session(engine)
+def get_db_engine():
+    """Obtener el motor de base de datos."""
+    return engine
 
 
 def render_prestamo_form():
@@ -56,14 +56,15 @@ def render_prestamo_form():
         unsafe_allow_html=True
     )
     
-    session = get_db_session()
+    engine = get_db_engine()
     
     with st.form(key="prestamo_form"):
         col1, col2 = st.columns(2)
         
         with col1:
             # Obtener empleados activos
-            empleados = get_empleados_activos(session)
+            with Session(engine) as session:
+                empleados = get_empleados_activos(session)
             if not empleados:
                 st.warning("Não há funcionários ativos para atribuir empréstimos")
                 return
@@ -142,11 +143,12 @@ def render_prestamo_form():
 
 def render_prestamo_details(prestamo):
     """Renderizar detalles de un préstamo."""
-    session = get_db_session()
+    engine = get_db_engine()
     
     # Obtener información del empleado y herramienta
-    empleado = get_empleado_by_id(session, prestamo.id_empleado_h)
-    herramienta = get_herramienta_by_id(session, prestamo.id_herramienta_h)
+    with Session(engine) as session:
+        empleado = get_empleado_by_id(session, prestamo.id_empleado_h)
+        herramienta = get_herramienta_by_id(session, prestamo.id_herramienta_h)
     
     nombre_empleado = f"{empleado.nombre} {empleado.apellido}" if empleado else "Funcionário não encontrado"
     nombre_herramienta = herramienta.nombre if herramienta else "Ferramenta não encontrada"
@@ -250,8 +252,9 @@ def render_prestamos_list(prestamos):
     
     with col3:
         # Obtener empleados para filtro
-        session = get_db_session()
-        empleados = get_empleados_activos(session)
+        engine = get_db_engine()
+        with Session(engine) as session:
+            empleados = get_empleados_activos(session)
         empleado_options = {f"{e.nombre} {e.apellido}": e.id for e in empleados}
         filter_empleado = st.selectbox(
             "👤 Funcionário",
@@ -332,8 +335,9 @@ def main():
     )
     
     # Obtener préstamos
-    session = get_db_session()
-    prestamos = get_prestamos(session)
+    engine = get_db_engine()
+    with Session(engine) as session:
+        prestamos = get_prestamos(session)
     
     # Mostrar formulario para nuevo préstamo
     render_prestamo_form()

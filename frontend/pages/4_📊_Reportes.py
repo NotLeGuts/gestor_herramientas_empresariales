@@ -27,11 +27,11 @@ from app.crud import (
 from frontend.utils import format_date_short
 
 
-# Cachear la sesión de base de datos
+# Cachear el motor de base de datos (no la sesión)
 @st.cache_resource
-def get_db_session():
-    """Obtener una sesión de base de datos."""
-    return Session(engine)
+def get_db_engine():
+    """Obtener el motor de base de datos."""
+    return engine
 
 
 def get_herramientas_mas_solicitadas(session, top_n=5):
@@ -118,8 +118,9 @@ def render_reporte_herramientas_solicitadas():
         unsafe_allow_html=True
     )
     
-    session = get_db_session()
-    herramientas = get_herramientas_mas_solicitadas(session, top_n=10)
+    engine = get_db_engine()
+    with Session(engine) as session:
+        herramientas = get_herramientas_mas_solicitadas(session, top_n=10)
     
     if not herramientas:
         st.info("Não há empréstimos registrados ainda.")
@@ -152,8 +153,9 @@ def render_reporte_prestamos_vencidos():
         unsafe_allow_html=True
     )
     
-    session = get_db_session()
-    prestamos_vencidos = get_prestamos_vencidos(session)
+    engine = get_db_engine()
+    with Session(engine) as session:
+        prestamos_vencidos = get_prestamos_vencidos(session)
     
     if not prestamos_vencidos:
         st.success("✅ Não há empréstimos vencidos")
@@ -205,8 +207,9 @@ def render_reporte_empleados_activos():
         unsafe_allow_html=True
     )
     
-    session = get_db_session()
-    empleados = get_empleados_mas_activos(session, top_n=10)
+    engine = get_db_engine()
+    with Session(engine) as session:
+        empleados = get_empleados_mas_activos(session, top_n=10)
     
     if not empleados:
         st.info("Não há empréstimos registrados ainda.")
@@ -238,8 +241,9 @@ def render_estadisticas_generales():
         unsafe_allow_html=True
     )
     
-    session = get_db_session()
-    stats = get_estadisticas_generales(session)
+    engine = get_db_engine()
+    with Session(engine) as session:
+        stats = get_estadisticas_generales(session)
     
     # Métricas principales
     col1, col2, col3 = st.columns(3)
@@ -308,8 +312,9 @@ def render_reporte_por_fecha():
         unsafe_allow_html=True
     )
     
-    session = get_db_session()
-    prestamos = get_prestamos(session)
+    engine = get_db_engine()
+    with Session(engine) as session:
+        prestamos = get_prestamos(session)
     
     if not prestamos:
         st.info("Não há empréstimos registrados ainda.")
@@ -404,7 +409,7 @@ def main():
     )
     
     # Obtener datos
-    session = get_db_session()
+    engine = get_db_engine()
     
     # Mostrar estadísticas generales
     render_estadisticas_generales()
