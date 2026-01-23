@@ -58,18 +58,27 @@ def render_prestamo_form():
     
     engine = get_db_engine()
     
+    # Obtener datos antes del formulario para evitar problemas con la sesión
+    with Session(engine) as session:
+        empleados = get_empleados_activos(session)
+        herramientas = get_herramientas_disponibles(session)
+        herramientas_disponibles = [h for h in herramientas if h.cantidad_disponible > 0]
+    
+    if not empleados:
+        st.warning("Não há funcionários ativos para atribuir empréstimos")
+        return
+    
+    if not herramientas_disponibles:
+        st.warning("Não há ferramentas disponíveis para empréstimo")
+        return
+    
+    empleado_options = {f"{e.nombre} {e.apellido} ({e.area})": e.id for e in empleados}
+    herramienta_options = {f"{h.nombre} ({h.codigo_interno}) - Estoque: {h.cantidad_disponible}": h.id_herramienta for h in herramientas_disponibles}
+    
     with st.form(key="prestamo_form"):
         col1, col2 = st.columns(2)
         
         with col1:
-            # Obtener empleados activos
-            with Session(engine) as session:
-                empleados = get_empleados_activos(session)
-            if not empleados:
-                st.warning("Não há funcionários ativos para atribuir empréstimos")
-                return
-            
-            empleado_options = {f"{e.nombre} {e.apellido} ({e.area})": e.id for e in empleados}
             selected_empleado_id = st.selectbox(
                 "Funcionário",
                 options=list(empleado_options.keys()),
@@ -77,15 +86,6 @@ def render_prestamo_form():
             )
             empleado_id = empleado_options[selected_empleado_id]
             
-            # Obtener herramientas disponibles
-            herramientas = get_herramientas_disponibles(session)
-            herramientas_disponibles = [h for h in herramientas if h.cantidad_disponible > 0]
-            
-            if not herramientas_disponibles:
-                st.warning("Não há ferramentas disponíveis para empréstimo")
-                return
-            
-            herramienta_options = {f"{h.nombre} ({h.codigo_interno}) - Estoque: {h.cantidad_disponible}": h.id_herramienta for h in herramientas_disponibles}
             selected_herramienta_id = st.selectbox(
                 "Ferramenta",
                 options=list(herramienta_options.keys()),
@@ -121,22 +121,24 @@ def render_prestamo_form():
         
         if submitted:
             try:
-                # Crear el préstamo
-                prestamo = create_prestamo(
-                    session,
-                    id_empleado_h=empleado_id,
-                    id_herramienta_h=herramienta_id,
-                    fecha_prestamo=datetime.combine(fecha_prestamo, datetime.min.time()),
-                    fecha_devolucion_estimada=datetime.combine(fecha_devolucion_estimada, datetime.min.time()),
-                    observaciones=observaciones
-                )
-                
-                if prestamo:
-                    show_success(f"Empréstimo registrado com sucesso (ID: {prestamo.id_prestamo})")
-                    st.rerun()
-                else:
-                    show_error("Não foi possível registrar o empréstimo. Verifique se a ferramenta está disponível.")
+                # Crear una nueva sesión para el envío del formulario
+                with Session(engine) as session:
+                    # Crear el préstamo
+                    prestamo = create_prestamo(
+                        session,
+                        id_empleado_h=empleado_id,
+                        id_herramienta_h=herramienta_id,
+                        fecha_prestamo=datetime.combine(fecha_prestamo, datetime.min.time()),
+                        fecha_devolucion_estimada=datetime.combine(fecha_devolucion_estimada, datetime.min.time()),
+                        observaciones=observaciones
+                    )
                     
+                    if prestamo:
+                        show_success(f"Empréstimo registrado com sucesso (ID: {prestamo.id_prestamo})")
+                        st.rerun()
+                    else:
+                        show_error("Não foi possível registrar o empréstimo. Verifique se a ferramenta está disponível.")
+                        
             except Exception as e:
                 show_error(f"Erro ao registrar empréstimo: {str(e)}")
 
