@@ -11,6 +11,9 @@ def create_empleado(
     activo: bool = True,
 ):
     "Crear empleado nuevo"
+    # Convertir cadena vacía a None para evitar conflictos de unicidad
+    correo = None if correo == "" else correo
+    
     empleado = Empleado(
         nombre=nombre,
         apellido=apellido,
@@ -56,6 +59,9 @@ def update_empleado(session: Session, empleado_id: int, **kwargs):
         return None
 
     for key, value in kwargs.items():
+        # Convertir cadena vacía a None para el campo correo
+        if key == "correo" and value == "":
+            value = None
         setattr(db_empleado, key, value)
 
     session.commit()

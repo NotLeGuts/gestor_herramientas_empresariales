@@ -30,49 +30,12 @@ def check_and_migrate_database():
     print("🔍 Verificando si se requiere migración de base de datos...")
     
     try:
-        from sqlmodel import SQLModel, Session, inspect
-        from app.database.config import engine
         from app.database.migrate_correo_unique import migrate_correo_unique
         from app.database.init_db import create_table
-        import sqlite3
         
-        # Verificar si la tabla existe
-        inspector = inspect(engine)
-        tables = inspector.get_table_names()
-        
-        if 'empleado' not in tables:
-            print("✓ Tabla 'empleado' no existe, creando tablas desde cero...")
-            create_table()
-            return
-        
-        # Conectar directamente a SQLite para verificar el esquema
-        conn = sqlite3.connect(engine.url.database)
-        cursor = conn.cursor()
-        
-        # Verificar el esquema de la columna correo
-        cursor.execute("PRAGMA table_info(empleado)")
-        columns = cursor.fetchall()
-        
-        correo_column = None
-        for col in columns:
-            if col[1] == 'correo':
-                correo_column = col
-                break
-        
-        if correo_column:
-            # Verificar si la columna es nullable (0 = NULL, 1 = NOT NULL)
-            if correo_column[3] == 1:  # NOT NULL
-                print("📊 Se detectó que la columna 'correo' es NOT NULL")
-                print("🔄 Ejecutando migración para permitir valores nulos...")
-                migrate_correo_unique()
-                print("✓ Migración completada")
-            else:
-                print("✓ La columna 'correo' ya es nullable, no se requiere migración")
-        else:
-            print("⚠️  No se encontró la columna 'correo', recreando tablas...")
-            create_table()
-        
-        conn.close()
+        # Ejecutar la migración que detecta automáticamente el tipo de base de datos
+        migrate_correo_unique()
+        print("✓ Verificación de migración completada")
         
     except Exception as e:
         print(f"⚠️  Error al verificar migración: {e}")
