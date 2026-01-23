@@ -107,24 +107,24 @@ def render_herramienta_form(herramienta=None):
                             herramienta.id_herramienta,
                             nombre=nombre,
                             categoria=categoria,
-                            estado=estado,
+                            estado=herramienta.estado,
                             codigo_interno=codigo_interno,
                             cantidad_disponible=cantidad_disponible,
                             descripcion=descripcion
                         )
-                    show_success(f"Ferramenta {nombre} atualizada com sucesso")
-                else:
-                    # Crear nueva herramienta
-                    create_herramienta(
-                        session,
-                        nombre=nombre,
-                        categoria=categoria,
-                        estado=estado,
-                        codigo_interno=codigo_interno,
-                        cantidad_disponible=cantidad_disponible,
-                        descripcion=descripcion
-                    )
-                    show_success(f"Ferramenta {nombre} criada com sucesso")
+                        show_success(f"Ferramenta {nombre} atualizada com sucesso")
+                    else:
+                        # Crear nueva herramienta
+                        create_herramienta(
+                            session,
+                            nombre=nombre,
+                            categoria=categoria,
+                            estado=True,
+                            codigo_interno=codigo_interno,
+                            cantidad_disponible=cantidad_disponible,
+                            descripcion=descripcion
+                        )
+                        show_success(f"Ferramenta {nombre} criada com sucesso")
                 
                 # Recargar la página para ver los cambios
                 st.rerun()
