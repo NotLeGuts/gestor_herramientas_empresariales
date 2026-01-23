@@ -100,6 +100,7 @@ def migrate_correo_unique():
                         conn.execute(text("ALTER TABLE empleado ADD CONSTRAINT empleado_correo_key UNIQUE (correo)"))
                         
                         print("✅ Migración completada exitosamente!")
+                        conn.commit()  # Asegurar que los cambios se guarden
                     else:
                         print("✅ La columna correo ya es nullable, no se requiere migración")
                 else:
@@ -107,6 +108,13 @@ def migrate_correo_unique():
                     
         except Exception as e:
             print(f"❌ Error durante la migración: {e}")
+            # Intentar revertir cambios en caso de error
+            try:
+                with engine.connect() as conn:
+                    conn.execute(text("DROP TABLE IF EXISTS empleado_temp"))
+                    conn.commit()
+            except:
+                pass
             raise
     else:
         # Para SQLite, usar el enfoque original
@@ -174,6 +182,7 @@ def migrate_correo_unique():
                     cursor.execute("ALTER TABLE empleado_temp RENAME TO empleado")
                     
                     print("✅ Migración completada exitosamente!")
+                    conn.commit()
                     
                 else:
                     print("✅ La columna correo ya es nullable, no se requiere migración")
@@ -186,11 +195,11 @@ def migrate_correo_unique():
             # Intentar revertir en caso de error
             try:
                 cursor.execute("DROP TABLE IF EXISTS empleado_temp")
+                conn.commit()
             except:
                 pass
             raise
         finally:
-            conn.commit()
             conn.close()
 
 

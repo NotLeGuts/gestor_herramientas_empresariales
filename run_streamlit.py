@@ -34,19 +34,40 @@ def check_and_migrate_database():
         from app.database.init_db import create_table
         
         # Ejecutar la migración que detecta automáticamente el tipo de base de datos
-        migrate_correo_unique()
-        print("✓ Verificación de migración completada")
+        # Usamos un bucle para asegurar que la migración se complete
+        max_retries = 3
+        retry_count = 0
+        migration_success = False
+        
+        while retry_count < max_retries and not migration_success:
+            try:
+                migrate_correo_unique()
+                migration_success = True
+                print("✓ Migración de base de datos completada exitosamente")
+            except Exception as e:
+                retry_count += 1
+                if retry_count < max_retries:
+                    print(f"⚠️  Error al migrar base de datos (intento {retry_count}/{max_retries}): {e}")
+                    print("🔄 Reintentando...")
+                    time.sleep(2)
+                else:
+                    print(f"❌ Error al migrar base de datos después de {max_retries} intentos: {e}")
+                    print("🔄 Intentando crear tablas desde cero...")
+                    try:
+                        create_table()
+                        print("✓ Tablas creadas desde cero")
+                        migration_success = True
+                    except Exception as e2:
+                        print(f"❌ Error al crear tablas: {e2}")
+                        raise
+        
+        if not migration_success:
+            raise Exception("No se pudo completar la migración o creación de tablas")
         
     except Exception as e:
-        print(f"⚠️  Error al verificar migración: {e}")
-        print("🔄 Intentando crear tablas desde cero...")
-        try:
-            from app.database.init_db import create_table
-            create_table()
-            print("✓ Tablas creadas desde cero")
-        except Exception as e2:
-            print(f"❌ Error al crear tablas: {e2}")
-            raise
+        print(f"❌ Error crítico durante la migración: {e}")
+        print("🚨 La aplicación no puede continuar sin una base de datos válida")
+        sys.exit(1)
 
 
 def main():
@@ -92,19 +113,22 @@ def main():
         sys.exit(1)
     
     # Verificar y migrar la base de datos si es necesario
-    try:
-        check_and_migrate_database()
-    except Exception as e:
-        print(f"⚠️  Error durante la verificación de migración: {e}")
-        print("⚠️  Continuando con la inicialización normal...")
+    # Esto es CRÍTICO y debe completarse antes de continuar
+    print("\n" + "="*60)
+    print("🔧 INICIANDO MIGRACIÓN DE BASE DE DATOS")
+    print("="*60 + "\n")
+    check_and_migrate_database()
     
     # Inicializar la base de datos (crear tablas si no existen)
+    # Esto es redundante pero asegura que todo esté en orden
     try:
-        print("Inicializando base de datos...")
+        print("\n" + "="*60)
+        print("📊 INICIALIZANDO BASE DE DATOS")
+        print("="*60 + "\n")
         create_table()
-        print("✓ Base de datos inicializada correctamente")
+        print("✓ Base de datos inicializada correctamente\n")
     except Exception as e:
-        print(f"Error al inicializar base de datos: {e}", file=sys.stderr)
+        print(f"❌ Error al inicializar base de datos: {e}", file=sys.stderr)
         sys.exit(1)
     
     # Mostrar información de configuración
