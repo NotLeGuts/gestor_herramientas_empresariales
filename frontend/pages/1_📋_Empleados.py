@@ -108,18 +108,18 @@ def render_empleado_form(empleado=None):
                             correo=correo,
                             activo=activo
                         )
-                    show_success(f"Funcionário {nombre} {apellido} atualizado com sucesso")
-                else:
-                    # Crear nuevo empleado
-                    create_empleado(
-                        session,
-                        nombre=nombre,
-                        apellido=apellido,
-                        area=area,
-                        correo=correo,
-                        activo=activo
-                    )
-                    show_success(f"Funcionário {nombre} {apellido} criado com sucesso")
+                        show_success(f"Funcionário {nombre} {apellido} atualizado com sucesso")
+                    else:
+                        # Crear nuevo empleado
+                        create_empleado(
+                            session,
+                            nombre=nombre,
+                            apellido=apellido,
+                            area=area,
+                            correo=correo,
+                            activo=activo
+                        )
+                        show_success(f"Funcionário {nombre} {apellido} criado com sucesso")
                 
                 # Eliminar estado de edición si existe y recargar
                 if "editing_empleado_id" in st.session_state:
