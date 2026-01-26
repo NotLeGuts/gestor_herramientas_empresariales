@@ -2,19 +2,38 @@ from sqlmodel import Session, select
 from app.models.herramienta import Herramienta
 
 
+def generate_codigo_interno(nombre: str) -> str:
+    """Generar código interno automático basado en el nombre de la herramienta."""
+    # Extraer las primeras 3 letras del nombre y convertirlas a mayúsculas
+    codigo = nombre[:3].upper()
+    # Si el nombre es muy corto, rellenar con números
+    if len(nombre) < 3:
+        codigo = nombre.upper() + "0" * (3 - len(nombre))
+    
+    # Generar un número aleatorio de 4 dígitos
+    import random
+    numero = random.randint(1000, 9999)
+    
+    return f"{codigo}-{numero}"
+
+
 def create_herramienta(
     session: Session,
     nombre: str,
-    categoria: str,
-    estado: bool,
-    codigo_interno: str,
-    cantidad_disponible: int,
+    categoria: int = None,
+    estado: bool = True,
+    codigo_interno: str = None,
+    cantidad_disponible: int = 1,
     descripcion: str = None,
 ):
     "Crear una nueva herramienta"
+    # Generar código interno automático si no se proporciona
+    if not codigo_interno:
+        codigo_interno = generate_codigo_interno(nombre)
+    
     herramienta = Herramienta(
         nombre=nombre,
-        categoria=categoria,
+        id_categoria_h=categoria,
         estado=estado,
         codigo_interno=codigo_interno,
         cantidad_disponible=cantidad_disponible,
@@ -56,6 +75,21 @@ def update_herramienta(session: Session, herramienta_id: int, **kwargs):
     db_herramienta = get_herramienta_by_id(session, herramienta_id)
     if not db_herramienta:
         return None
+
+    # Si se está actualizando el nombre y no se proporciona código interno,
+    # generar uno automáticamente
+    if 'nombre' in kwargs and kwargs['nombre'] and 'codigo_interno' not in kwargs:
+        kwargs['codigo_interno'] = generate_codigo_interno(kwargs['nombre'])
+    elif 'codigo_interno' in kwargs and not kwargs['codigo_interno']:
+        # Si el código interno está vacío, generar uno nuevo
+        if 'nombre' in kwargs and kwargs['nombre']:
+            kwargs['codigo_interno'] = generate_codigo_interno(kwargs['nombre'])
+        elif db_herramienta.nombre:
+            kwargs['codigo_interno'] = generate_codigo_interno(db_herramienta.nombre)
+
+    # Manejar el campo categoria (que ahora es id_categoria_h)
+    if 'categoria' in kwargs:
+        kwargs['id_categoria_h'] = kwargs.pop('categoria')
 
     for key, value in kwargs.items():
         setattr(db_herramienta, key, value)
