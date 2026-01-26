@@ -1,7 +1,7 @@
 """
-Punto de entrada principal para la aplicación Gestor de Herramientas.
+Ponto de entrada principal para a aplicação Gestor de Ferramentas.
 
-Este archivo configura la aplicación Streamlit y define la estructura base.
+Este arquivo configura a aplicação Streamlit e define a estrutura base.
 """
 
 import streamlit as st
@@ -12,7 +12,7 @@ from app.crud import get_empleados, get_herramientas, get_prestamos_activos
 
 # Configuración inicial de la aplicación
 st.set_page_config(
-    page_title="Dashboard - Gestor de Herramientas",
+    page_title="Dashboard - Gestor de Ferramentas",
     page_icon="🔧",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -51,7 +51,7 @@ def get_dashboard_data():
 def render_sidebar():
     """Renderizar el sidebar con la navegación."""
     with st.sidebar:
-        st.title("🔧 Gestor de Herramientas")
+        st.title("🔧 Gestor de Ferramentas")
         st.markdown("---")
         
         st.markdown("---")
@@ -116,7 +116,7 @@ def render_dashboard():
 
 # Página principal
 def main():
-    """Punto de entrada principal de la aplicación."""
+    """Ponto de entrada principal da aplicação."""
     
     # Establecer página actual
     st.session_state.current_page = "home"
