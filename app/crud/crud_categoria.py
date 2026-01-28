@@ -25,15 +25,21 @@ def create_categoria(
     Returns:
         La categoría creada
     """
-    categoria = Categoria(
-        nombre=nombre,
-        estado=estado,
-    )
-    session.add(categoria)
-    session.commit()
-    session.refresh(categoria)
+    try:
+        categoria = Categoria(
+            nombre=nombre,
+            estado=estado,
+        )
+        session.add(categoria)
+        session.commit()
+        session.refresh(categoria)
 
-    return categoria
+        return categoria
+    except Exception as e:
+        # Hacer rollback en caso de error
+        session.rollback()
+        # Re-lanzar la excepción para que el llamador pueda manejarla
+        raise Exception(f"Error al crear categoría: {str(e)}")
 
 
 def get_categoria_by_id(session: Session, categoria_id: int):
@@ -109,16 +115,22 @@ def update_categoria(session: Session, categoria_id: int, **kwargs):
     Returns:
         La categoría actualizada o None si no existe
     """
-    db_categoria = get_categoria_by_id(session, categoria_id)
-    if not db_categoria:
-        return None
+    try:
+        db_categoria = get_categoria_by_id(session, categoria_id)
+        if not db_categoria:
+            return None
 
-    for key, value in kwargs.items():
-        setattr(db_categoria, key, value)
+        for key, value in kwargs.items():
+            setattr(db_categoria, key, value)
 
-    session.commit()
-    session.refresh(db_categoria)
-    return db_categoria
+        session.commit()
+        session.refresh(db_categoria)
+        return db_categoria
+    except Exception as e:
+        # Hacer rollback en caso de error
+        session.rollback()
+        # Re-lanzar la excepción para que el llamador pueda manejarla
+        raise Exception(f"Error al actualizar categoría: {str(e)}")
 
 
 def inhabilitar_categoria(session: Session, categoria_id: int):

@@ -14,37 +14,43 @@ def create_prestamo(
     estado: str = "activo",
 ):
     """Crear un nuevo préstamo"""
-    # Obtener la herramienta para validar stock y estado
-    herramienta = session.get(Herramienta, id_herramienta_h)
-    if not herramienta:
-        return None  # Herramienta no existe
-    
-    # Validar que la herramienta esté activa
-    if not herramienta.estado:
-        return None  # Herramienta inactiva
-    
-    # Validar que haya stock disponible
-    if herramienta.cantidad_disponible <= 0:
-        return None  # No hay stock disponible
-    
-    # Crear el préstamo
-    prestamo = Prestamo(
-        id_empleado_h=id_empleado_h,
-        id_herramienta_h=id_herramienta_h,
-        fecha_prestamo=fecha_prestamo or datetime.now(),
-        fecha_devolucion_estimada=fecha_devolucion_estimada or (datetime.now() + timedelta(days=1)),
-        observaciones=observaciones,
-        estado=estado,
-    )
-    session.add(prestamo)
-    
-    # Descontar del stock
-    herramienta.cantidad_disponible -= 1
-    
-    session.commit()
-    session.refresh(prestamo)
+    try:
+        # Obtener la herramienta para validar stock y estado
+        herramienta = session.get(Herramienta, id_herramienta_h)
+        if not herramienta:
+            return None  # Herramienta no existe
+        
+        # Validar que la herramienta esté activa
+        if not herramienta.estado:
+            return None  # Herramienta inactiva
+        
+        # Validar que haya stock disponible
+        if herramienta.cantidad_disponible <= 0:
+            return None  # No hay stock disponible
+        
+        # Crear el préstamo
+        prestamo = Prestamo(
+            id_empleado_h=id_empleado_h,
+            id_herramienta_h=id_herramienta_h,
+            fecha_prestamo=fecha_prestamo or datetime.now(),
+            fecha_devolucion_estimada=fecha_devolucion_estimada or (datetime.now() + timedelta(days=1)),
+            observaciones=observaciones,
+            estado=estado,
+        )
+        session.add(prestamo)
+        
+        # Descontar del stock
+        herramienta.cantidad_disponible -= 1
+        
+        session.commit()
+        session.refresh(prestamo)
 
-    return prestamo
+        return prestamo
+    except Exception as e:
+        # Hacer rollback en caso de error
+        session.rollback()
+        # Re-lanzar la excepción para que el llamador pueda manejarla
+        raise Exception(f"Error al crear préstamo: {str(e)}")
 
 
 def get_prestamo_by_id(session: Session, prestamo_id: int):
@@ -89,50 +95,68 @@ def get_prestamos_vencidos(session: Session):
 
 def update_prestamo(session: Session, prestamo_id: int, **kwargs):
     """Actualizar préstamo"""
-    db_prestamo = get_prestamo_by_id(session, prestamo_id)
-    if not db_prestamo:
-        return None
+    try:
+        db_prestamo = get_prestamo_by_id(session, prestamo_id)
+        if not db_prestamo:
+            return None
 
-    for key, value in kwargs.items():
-        setattr(db_prestamo, key, value)
+        for key, value in kwargs.items():
+            setattr(db_prestamo, key, value)
 
-    session.commit()
-    session.refresh(db_prestamo)
-    return db_prestamo
+        session.commit()
+        session.refresh(db_prestamo)
+        return db_prestamo
+    except Exception as e:
+        # Hacer rollback en caso de error
+        session.rollback()
+        # Re-lanzar la excepción para que el llamador pueda manejarla
+        raise Exception(f"Error al actualizar préstamo: {str(e)}")
 
 
 def devolver_prestamo(session: Session, prestamo_id: int, fecha_devolucion: datetime = None):
     """Marcar un préstamo como devuelto"""
-    db_prestamo = get_prestamo_by_id(session, prestamo_id)
-    if not db_prestamo:
-        return False
+    try:
+        db_prestamo = get_prestamo_by_id(session, prestamo_id)
+        if not db_prestamo:
+            return False
 
-    # Obtener la herramienta para actualizar el stock
-    herramienta = session.get(Herramienta, db_prestamo.id_herramienta_h)
-    if herramienta:
-        # Sumar al stock al devolver
-        herramienta.cantidad_disponible += 1
+        # Obtener la herramienta para actualizar el stock
+        herramienta = session.get(Herramienta, db_prestamo.id_herramienta_h)
+        if herramienta:
+            # Sumar al stock al devolver
+            herramienta.cantidad_disponible += 1
 
-    db_prestamo.estado = "devuelto"
-    db_prestamo.fecha_devolucion = fecha_devolucion or datetime.now()
-    session.commit()
-    session.refresh(db_prestamo)
-    return True
+        db_prestamo.estado = "devuelto"
+        db_prestamo.fecha_devolucion = fecha_devolucion or datetime.now()
+        session.commit()
+        session.refresh(db_prestamo)
+        return True
+    except Exception as e:
+        # Hacer rollback en caso de error
+        session.rollback()
+        # Re-lanzar la excepción para que el llamador pueda manejarla
+        raise Exception(f"Error al devolver préstamo: {str(e)}")
 
 
 def cancelar_prestamo(session: Session, prestamo_id: int):
     """Cancelar un préstamo"""
-    db_prestamo = get_prestamo_by_id(session, prestamo_id)
-    if not db_prestamo:
-        return False
+    try:
+        db_prestamo = get_prestamo_by_id(session, prestamo_id)
+        if not db_prestamo:
+            return False
 
-    # Obtener la herramienta para actualizar el stock
-    herramienta = session.get(Herramienta, db_prestamo.id_herramienta_h)
-    if herramienta:
-        # Sumar al stock al cancelar (porque el préstamo nunca se concretó)
-        herramienta.cantidad_disponible += 1
+        # Obtener la herramienta para actualizar el stock
+        herramienta = session.get(Herramienta, db_prestamo.id_herramienta_h)
+        if herramienta:
+            # Sumar al stock al cancelar (porque el préstamo nunca se concretó)
+            herramienta.cantidad_disponible += 1
 
-    db_prestamo.estado = "cancelado"
-    session.commit()
-    session.refresh(db_prestamo)
-    return True
+        db_prestamo.estado = "cancelado"
+        session.commit()
+        session.refresh(db_prestamo)
+        return True
+    except Exception as e:
+        # Hacer rollback en caso de error
+        session.rollback()
+        # Re-lanzar la excepción para que el llamador pueda manejarla
+        raise Exception(f"Error al cancelar préstamo: {str(e)}")

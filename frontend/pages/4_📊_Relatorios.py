@@ -24,6 +24,7 @@ from app.crud import (
     get_empleado_by_id,
     get_herramienta_by_id
 )
+from app.models.empleado import Empleado
 from frontend.utils import format_date_short
 
 
@@ -38,22 +39,36 @@ def get_herramientas_mas_solicitadas(session, top_n=5):
     """Obtener las herramientas más solicitadas."""
     prestamos = get_prestamos(session)
     
-    # Contar préstamos por herramienta
-    herramienta_counts = Counter()
+    # Contar préstamos por herramienta y recolectar IDs de empleados
+    herramienta_data = {}
     for prestamo in prestamos:
-        herramienta_counts[prestamo.id_herramienta_h] += 1
+        if prestamo.id_herramienta_h not in herramienta_data:
+            herramienta_data[prestamo.id_herramienta_h] = {
+                'count': 0,
+                'empleados': set()
+            }
+        herramienta_data[prestamo.id_herramienta_h]['count'] += 1
+        herramienta_data[prestamo.id_herramienta_h]['empleados'].add(prestamo.id_empleado_h)
     
     # Obtener las herramientas más solicitadas
-    top_herramientas = herramienta_counts.most_common(top_n)
+    top_herramientas = sorted(herramienta_data.items(), key=lambda x: x[1]['count'], reverse=True)[:top_n]
     
-    # Obtener detalles de las herramientas
+    # Obtener detalles de las herramientas y nombres de empleados
     resultado = []
-    for herramienta_id, count in top_herramientas:
+    for herramienta_id, data in top_herramientas:
         herramienta = get_herramienta_by_id(session, herramienta_id)
         if herramienta:
+            # Obtener nombres de empleados
+            empleados_nombres = []
+            for empleado_id in data['empleados']:
+                empleado = session.get(Empleado, empleado_id)
+                if empleado:
+                    empleados_nombres.append(f"{empleado.nombre} {empleado.apellido}")
+            
             resultado.append({
                 "herramienta": herramienta,
-                "prestamos": count
+                "prestamos": data['count'],
+                "empleados": empleados_nombres
             })
     
     return resultado
@@ -133,7 +148,7 @@ def render_reporte_herramientas_solicitadas():
             "Ferramenta": h["herramienta"].nombre,
             "Código": h["herramienta"].codigo_interno,
             "Categoria": h["herramienta"].categoria,
-            "Empréstimos": h["prestamos"],
+            "Empréstimos": ", ".join(h["empleados"]) if h["empleados"] else "Nenhum",
             "Estoque": h["herramienta"].cantidad_disponible
         } for i, h in enumerate(herramientas)],
         hide_index=True,
@@ -323,10 +338,18 @@ def render_reporte_por_fecha():
     col1, col2 = st.columns(2)
     
     with col1:
+        # Convertir datetime a date para el min_value y manejar el caso de lista vacía
+        min_date = min(p.fecha_prestamo.date() for p in prestamos) if prestamos else datetime.now().date()
+        
+        # Asegurar que el valor por defecto sea al menos min_date
+        default_start = datetime.now() - timedelta(days=30)
+        if default_start.date() < min_date:
+            default_start = datetime.combine(min_date, datetime.min.time())
+        
         fecha_inicio = st.date_input(
             "Data Inicial",
-            value=datetime.now() - timedelta(days=30),
-            min_value=min(p.fecha_prestamo for p in prestamos)
+            value=default_start,
+            min_value=min_date
         )
     
     with col2:

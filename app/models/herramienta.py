@@ -9,4 +9,4 @@ class Herramienta(SQLModel, table=True):
     codigo_interno: str | None = Field(default=None, unique=True)
     cantidad_disponible: int = Field(default=1)
     descripcion: str | None = None
-    id_categoria_h: int = Field(foreign_key="categoria.id_categoria")
+    id_categoria_h: int | None = Field(default=None, foreign_key="categoria.id_categoria")

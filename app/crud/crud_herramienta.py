@@ -27,23 +27,30 @@ def create_herramienta(
     descripcion: str = None,
 ):
     "Crear una nueva herramienta"
-    # Generar código interno automático si no se proporciona
-    if not codigo_interno:
-        codigo_interno = generate_codigo_interno(nombre)
-    
-    herramienta = Herramienta(
-        nombre=nombre,
-        id_categoria_h=categoria,
-        estado=estado,
-        codigo_interno=codigo_interno,
-        cantidad_disponible=cantidad_disponible,
-        descripcion=descripcion,
-    )
-    session.add(herramienta)
-    session.commit()
-    session.refresh(herramienta)
+    try:
+        # Generar código interno automático si no se proporciona
+        if not codigo_interno:
+            codigo_interno = generate_codigo_interno(nombre)
+        
+        herramienta = Herramienta(
+            nombre=nombre,
+            categoria=None,  # Campo legado siempre None
+            id_categoria_h=categoria,
+            estado=estado,
+            codigo_interno=codigo_interno,
+            cantidad_disponible=cantidad_disponible,
+            descripcion=descripcion,
+        )
+        session.add(herramienta)
+        session.commit()
+        session.refresh(herramienta)
 
-    return herramienta
+        return herramienta
+    except Exception as e:
+        # Hacer rollback en caso de error
+        session.rollback()
+        # Re-lanzar la excepción para que el llamador pueda manejarla
+        raise Exception(f"Error al crear herramienta: {str(e)}")
 
 
 def get_herramienta_by_id(session: Session, herramienta_id: int):
@@ -72,31 +79,41 @@ def get_herramientas_por_categoria(session: Session, categoria: str):
 
 def update_herramienta(session: Session, herramienta_id: int, **kwargs):
     "Actualizar herramienta"
-    db_herramienta = get_herramienta_by_id(session, herramienta_id)
-    if not db_herramienta:
-        return None
+    try:
+        db_herramienta = get_herramienta_by_id(session, herramienta_id)
+        if not db_herramienta:
+            return None
 
-    # Si se está actualizando el nombre y no se proporciona código interno,
-    # generar uno automáticamente
-    if 'nombre' in kwargs and kwargs['nombre'] and 'codigo_interno' not in kwargs:
-        kwargs['codigo_interno'] = generate_codigo_interno(kwargs['nombre'])
-    elif 'codigo_interno' in kwargs and not kwargs['codigo_interno']:
-        # Si el código interno está vacío, generar uno nuevo
-        if 'nombre' in kwargs and kwargs['nombre']:
+        # Si se está actualizando el nombre y no se proporciona código interno,
+        # generar uno automáticamente
+        if 'nombre' in kwargs and kwargs['nombre'] and 'codigo_interno' not in kwargs:
             kwargs['codigo_interno'] = generate_codigo_interno(kwargs['nombre'])
-        elif db_herramienta.nombre:
-            kwargs['codigo_interno'] = generate_codigo_interno(db_herramienta.nombre)
+        elif 'codigo_interno' in kwargs and not kwargs['codigo_interno']:
+            # Si el código interno está vacío, generar uno nuevo
+            if 'nombre' in kwargs and kwargs['nombre']:
+                kwargs['codigo_interno'] = generate_codigo_interno(kwargs['nombre'])
+            elif db_herramienta.nombre:
+                kwargs['codigo_interno'] = generate_codigo_interno(db_herramienta.nombre)
 
-    # Manejar el campo categoria (que ahora es id_categoria_h)
-    if 'categoria' in kwargs:
-        kwargs['id_categoria_h'] = kwargs.pop('categoria')
+        # Manejar el campo categoria (que ahora es id_categoria_h)
+        if 'categoria' in kwargs:
+            kwargs['id_categoria_h'] = kwargs.pop('categoria')
+        
+        # Asegurarnos de que el campo legado 'categoria' (string) siempre sea None
+        # para evitar confusiones con el nuevo campo id_categoria_h
+        kwargs['categoria'] = None
 
-    for key, value in kwargs.items():
-        setattr(db_herramienta, key, value)
+        for key, value in kwargs.items():
+            setattr(db_herramienta, key, value)
 
-    session.commit()
-    session.refresh(db_herramienta)
-    return db_herramienta
+        session.commit()
+        session.refresh(db_herramienta)
+        return db_herramienta
+    except Exception as e:
+        # Hacer rollback en caso de error
+        session.rollback()
+        # Re-lanzar la excepción para que el llamador pueda manejarla
+        raise Exception(f"Error al actualizar herramienta: {str(e)}")
 
 
 def inhabilitar_herramienta(session: Session, herramienta_id: int):

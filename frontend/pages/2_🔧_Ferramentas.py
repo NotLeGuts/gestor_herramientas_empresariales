@@ -89,7 +89,7 @@ def render_herramienta_form(herramienta=None):
             categoria_nombre_seleccionada = st.selectbox(
                 "Categoria",
                 ["Sin categoría"] + categorias_disponibles,
-                index=0 if not categoria_id else next((i for i, nombre in enumerate(["Sin categoría"] + categorias_disponibles) if categoria_por_id.get(categoria_id) == nombre), 0),
+                index=0 if not categoria_id else next((i for i, nombre_cat in enumerate(["Sin categoría"] + categorias_disponibles) if categoria_por_id.get(categoria_id) == nombre_cat), 0),
                 placeholder="Seleccionar categoría"
             )
             
@@ -97,8 +97,8 @@ def render_herramienta_form(herramienta=None):
             categoria = None
             if categoria_nombre_seleccionada and categoria_nombre_seleccionada != "Sin categoría":
                 # Buscar el ID de categoría basado en el nombre
-                for cid, nombre in categoria_por_id.items():
-                    if nombre == categoria_nombre_seleccionada:
+                for cid, nombre_categoria in categoria_por_id.items():
+                    if nombre_categoria == categoria_nombre_seleccionada:
                         categoria = cid
                         break
             
@@ -195,12 +195,22 @@ def render_herramienta_details(herramienta):
     icono = "🔧" if herramienta.estado else "⚠️"
     estado_texto = " (Em Serviço)" if herramienta.estado else " (Fora de Serviço)"
     
+    # Obtener el nombre de la categoría basado en id_categoria_h
+    categoria_nombre = "Sin categoría"
+    if herramienta.id_categoria_h:
+        engine = get_db_engine()
+        with Session(engine) as session:
+            from app.models.categoria import Categoria
+            categoria = session.get(Categoria, herramienta.id_categoria_h)
+            if categoria:
+                categoria_nombre = categoria.nombre
+    
     with st.expander(f"{icono} {herramienta.nombre}{estado_texto}", expanded=False):
         col1, col2, col3 = st.columns(3)
         
         with col1:
             st.write(f"**ID:** {herramienta.id_herramienta}")
-            st.write(f"**Categoria:** {herramienta.categoria}")
+            st.write(f"**Categoria:** {categoria_nombre}")
             st.write(f"**Código:** {herramienta.codigo_interno}")
         
         with col2:

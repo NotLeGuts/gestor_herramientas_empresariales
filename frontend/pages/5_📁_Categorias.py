@@ -64,7 +64,13 @@ def render_categoria_form(categoria=None):
     
     with st.form(key=f"categoria_form_{categoria.id_categoria if categoria else 'new'}"):
         nombre = st.text_input("Nome da Categoria", value=categoria.nombre if categoria else "")
-        # estado = st.checkbox("Ativa", value=categoria.estado if categoria else True)
+        
+        # Solo mostrar checkbox de estado para categorías existentes
+        if categoria:
+            estado = st.checkbox("Ativa", value=categoria.estado if categoria else True)
+        else:
+            # Para categorías nuevas, el estado siempre es True
+            estado = True
         
         # Botão de salvar dentro do formulário
         submitted = st.form_submit_button("Salvar", type="primary")
@@ -72,7 +78,7 @@ def render_categoria_form(categoria=None):
         if submitted:
             # Validar campos obrigatórios
             required_fields = {
-                "Nome da Categoria": nome,
+                "Nome da Categoria": nombre,
             }
             is_valid, message = validate_required_fields(**required_fields)
             
@@ -89,18 +95,18 @@ def render_categoria_form(categoria=None):
                         update_categoria(
                             session,
                             categoria.id_categoria,
-                            nome=nome,
+                            nombre=nombre,
                             estado=estado,
                         )
-                        show_success(f"Categoria {nome} atualizada com sucesso")
+                        show_success(f"Categoria {nombre} atualizada com sucesso")
                     else:
                         # Criar nova categoria
                         create_categoria(
                             session,
-                            nome=nome,
+                            nombre=nombre,
                             estado=estado,
                         )
-                        show_success(f"Categoria {nome} criada com sucesso")
+                        show_success(f"Categoria {nombre} criada com sucesso")
                 
                 # Recarregar a página para ver as alterações
                 st.rerun()

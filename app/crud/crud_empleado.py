@@ -11,21 +11,27 @@ def create_empleado(
     activo: bool = True,
 ):
     "Crear empleado nuevo"
-    # Convertir cadena vacía a None para evitar conflictos de unicidad
-    correo = None if correo == "" else correo
-    
-    empleado = Empleado(
-        nombre=nombre,
-        apellido=apellido,
-        area=area,
-        correo=correo,
-        activo=activo,
-    )
-    session.add(empleado)
-    session.commit()
-    session.refresh(empleado)
+    try:
+        # Convertir cadena vacía a None para evitar conflictos de unicidad
+        correo = None if correo == "" else correo
+        
+        empleado = Empleado(
+            nombre=nombre,
+            apellido=apellido,
+            area=area,
+            correo=correo,
+            activo=activo,
+        )
+        session.add(empleado)
+        session.commit()
+        session.refresh(empleado)
 
-    return empleado
+        return empleado
+    except Exception as e:
+        # Hacer rollback en caso de error
+        session.rollback()
+        # Re-lanzar la excepción para que el llamador pueda manejarla
+        raise Exception(f"Error al crear empleado: {str(e)}")
 
 
 def get_empleado_by_id(session: Session, empleado_id: int):
@@ -54,19 +60,25 @@ def get_empleados_por_area(session: Session, area: str):
 
 def update_empleado(session: Session, empleado_id: int, **kwargs):
     "Actualizar empleado"
-    db_empleado = get_empleado_by_id(session, empleado_id)
-    if not db_empleado:
-        return None
+    try:
+        db_empleado = get_empleado_by_id(session, empleado_id)
+        if not db_empleado:
+            return None
 
-    for key, value in kwargs.items():
-        # Convertir cadena vacía a None para el campo correo
-        if key == "correo" and value == "":
-            value = None
-        setattr(db_empleado, key, value)
+        for key, value in kwargs.items():
+            # Convertir cadena vacía a None para el campo correo
+            if key == "correo" and value == "":
+                value = None
+            setattr(db_empleado, key, value)
 
-    session.commit()
-    session.refresh(db_empleado)
-    return db_empleado
+        session.commit()
+        session.refresh(db_empleado)
+        return db_empleado
+    except Exception as e:
+        # Hacer rollback en caso de error
+        session.rollback()
+        # Re-lanzar la excepción para que el llamador pueda manejarla
+        raise Exception(f"Error al actualizar empleado: {str(e)}")
 
 
 def inhabilitar_empleado(session: Session, empleado_id: int):
