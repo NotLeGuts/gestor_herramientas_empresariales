@@ -12,3 +12,4 @@ Sistema para controlar préstamos de herramientas a empleados.
 ## 📜 Licencia
 
 Licencia MIT - Ver archivo [LICENSE](LICENSE) para más detalles.
+
