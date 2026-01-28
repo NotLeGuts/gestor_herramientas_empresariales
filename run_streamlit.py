@@ -35,7 +35,8 @@ def main():
         os.environ["DATABASE_URL"] = "sqlite:///gestor_herramientas.db"
 
     if not os.getenv("STREAMLIT_SERVER_PORT"):
-        os.environ["STREAMLIT_SERVER_PORT"] = "8501"
+        # No configuramos un puerto fijo, dejamos que Streamlit elija uno disponible
+        pass
 
     if not os.getenv("STREAMLIT_SERVER_ADDRESS"):
         os.environ["STREAMLIT_SERVER_ADDRESS"] = "0.0.0.0"
@@ -78,7 +79,10 @@ def main():
     # Mostrar información de configuración
     print(f"Directorio del proyecto: {project_dir}")
     print(f"Base de datos: {os.getenv('DATABASE_URL')}")
-    print(f"Puerto: {os.getenv('STREAMLIT_SERVER_PORT')}")
+    if os.getenv("STREAMLIT_SERVER_PORT"):
+        print(f"Puerto: {os.getenv('STREAMLIT_SERVER_PORT')}")
+    else:
+        print("Puerto: (se elegirá automáticamente)")
     print(f"Dirección: {os.getenv('STREAMLIT_SERVER_ADDRESS')}")
 
     # Iniciar Streamlit directamente
@@ -88,8 +92,6 @@ def main():
         "streamlit",
         "run",
         "frontend/Inicio.py",
-        "--server.port",
-        os.getenv("STREAMLIT_SERVER_PORT", "8501"),
         "--server.address",
         os.getenv("STREAMLIT_SERVER_ADDRESS", "0.0.0.0"),
         "--global.developmentMode",
@@ -97,6 +99,10 @@ def main():
         "--browser.serverAddress",
         "0.0.0.0",
     ]
+    
+    # Si se especifica un puerto explícitamente, usarlo
+    if os.getenv("STREAMLIT_SERVER_PORT"):
+        sys.argv.extend(["--server.port", os.getenv("STREAMLIT_SERVER_PORT")])
 
     # Importar y ejecutar Streamlit
     try:

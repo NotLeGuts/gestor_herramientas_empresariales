@@ -1,0 +1,6 @@
+tree 200f85e58ba72f0f657c2f5e38a0a811c8ddad32
+parent a509b9ae5149e3cd151f3a9de5c4a198d3bb74e6
+author LeGuts <gustavobertoya@proton.me> 1769092976 -0300
+committer LeGuts <gustavobertoya@proton.me> 1769092976 -0300
+
+Fix: Corregir configuración obsoleta de Streamlit y mejorar depuración

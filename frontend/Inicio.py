@@ -58,10 +58,10 @@ def render_sidebar():
         
         # # Solo mostrar enlaces en la página de inicio
         # if "current_page" not in st.session_state or st.session_state.current_page == "home":
-        #     st.page_link("pages/1_📋_Empleados.py", label="📋 Empleados")
-        #     st.page_link("pages/2_🔧_Herramientas.py", label="🔧 Herramientas")
-        #     st.page_link("pages/3_📦_Prestamos.py", label="📦 Préstamos")
-        #     st.page_link("pages/4_📊_Reportes.py", label="📊 Reportes")
+        #     st.page_link("pages/1_📋_Funcionarios.py", label="📋 Funcionários")
+        #     st.page_link("pages/2_🔧_Ferramentas.py", label="🔧 Ferramentas")
+        #     st.page_link("pages/3_📦_Emprestimos.py", label="📦 Empréstimos")
+        #     st.page_link("pages/4_📊_Relatorios.py", label="📊 Relatórios")
         #
 
 # Dashboard principal

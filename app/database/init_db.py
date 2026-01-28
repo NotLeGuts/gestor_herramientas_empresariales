@@ -3,6 +3,7 @@ from app.database.config import engine
 from app.models.empleado import Empleado
 from app.models.herramienta import Herramienta
 from app.models.prestamo import Prestamo
+from app.models.categoria import Categoria
 
 
 def create_table():

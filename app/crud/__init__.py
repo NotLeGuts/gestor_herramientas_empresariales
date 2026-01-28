@@ -14,6 +14,19 @@ Ejemplo de uso:
     empleados = get_empleados(session)
 """
 
+# Categorías
+from .crud_categoria import (
+    create_categoria,
+    get_categoria_by_id,
+    get_categorias,
+    get_herramientas_por_categoria,
+    get_categorias_activas,
+    update_categoria,
+    inhabilitar_categoria,
+    habilitar_categoria,
+    delete_categoria,
+)
+
 # Empleados
 from .crud_empleado import (
     create_empleado,
@@ -36,6 +49,7 @@ from .crud_herramienta import (
     update_herramienta,
     inhabilitar_herramienta,
     habilitar_herramienta,
+    generate_codigo_interno,
 )
 
 # Préstamos
@@ -54,6 +68,17 @@ from .crud_prestamo import (
 
 # Documentación de la API
 __all__ = [
+    # Categorías
+    'create_categoria',
+    'get_categoria_by_id',
+    'get_categorias',
+    'get_herramientas_por_categoria',
+    'get_categorias_activas',
+    'update_categoria',
+    'inhabilitar_categoria',
+    'habilitar_categoria',
+    'delete_categoria',
+
     # Empleados
     'create_empleado',
     'get_empleado_by_id',
@@ -73,6 +98,7 @@ __all__ = [
     'update_herramienta',
     'inhabilitar_herramienta',
     'habilitar_herramienta',
+    'generate_codigo_interno',
 
     # Préstamos
     'create_prestamo',
