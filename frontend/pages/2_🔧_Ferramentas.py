@@ -76,7 +76,7 @@ def render_herramienta_form(herramienta=None):
             categoria_por_id = {}
             with Session(engine) as session:
                 # Importar aquí para evitar circular imports
-                from app.crud import get_categorias_activas
+                from app.crud.crud_categoria import get_categorias_activas
                 categorias = get_categorias_activas(session)
                 categorias_disponibles = [c.nombre for c in categorias]
                 categoria_por_id = {c.id_categoria: c.nombre for c in categorias}
