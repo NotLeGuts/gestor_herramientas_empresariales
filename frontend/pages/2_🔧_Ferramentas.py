@@ -20,8 +20,8 @@ from app.crud import (
     inhabilitar_herramienta,
     habilitar_herramienta,
     get_herramientas_disponibles,
-    generate_codigo_interno,
 )
+from app.crud.crud_herramienta import generate_codigo_interno
 from frontend.utils import show_success, show_error, show_info, validate_required_fields
 
 
